@@ -1,0 +1,182 @@
+                                                               ************Table Creation*************
+
+CREATE TABLE BRANDS (bid number(7), bname VARCHAR(20), PRIMARY KEY(bid));
+
+CREATE TABLE INV_USER (user_id varchar(20),
+user_name varchar(20),
+user_password varchar(20),
+last_login timestamp,
+user_type varchar(10));
+
+ALTER TABLE INV_USER ADD PRIMARY KEY(user_id);
+--ALTER TABLE INV_USER MODIFY COLUMN last_login as ;
+
+CREATE TABLE CATEGORIES (cid number(7),
+category_name VARCHAR(20),
+PRIMARY KEY(cid));
+
+CREATE TABLE PRODUCT (PID number(7),
+cid number(7) references CATEGORIES(cid), 
+bid number(7) references BRANDS(bid),
+sid number(7),
+pname varchar(20),
+p_stock number(6),
+price number(6),
+added_date date,
+PRIMARY KEY(pid));
+
+CREATE TABLE STORES (sid number(7),
+sname varchar(20),
+address varchar(50),
+mobNo number(10),
+PRIMARY KEY (sid));
+
+ALTER TABLE PRODUCT ADD FOREIGN KEY(sid) references STORES(sid);
+
+CREATE TABLE PROVIDES (bid number(7) references BRANDS(bid),
+sid number(7) references STORES(sid),
+discount number(6));
+
+CREATE TABLE CUSTOMER_CART (cust_id number(7),
+cust_name varchar(20),
+mobNo number(10),
+PRIMARY KEY(cust_id));
+
+CREATE TABLE SELECT_PRODUCT (cust_id number(7) references CUSTOMER_CART(cust_id),
+pid number(7) references PRODUCT(pid),
+quantity number(6));
+
+CREATE TABLE TRANSACTION (id number(7),
+total_amount number(8),
+paid number(8),
+due number(8),
+gst number(8),
+discount number(6),
+payment_method varchar(10),
+cart_id number(7) references CUSTOMER_CART(cust_id),
+PRIMARY KEY(id));
+ 
+ 
+                                                     *************** INSERT VALUE INTO TABLE *****************
+                                                     
+INSERT INTO BRANDS values(1,'Adidas');
+INSERT INTO BRANDS values(2,'Boat');
+INSERT INTO BRANDS values(3,'Starbucks');
+INSERT INTO BRANDS values(4,'WildCraft');
+INSERT INTO BRANDS values(5,'Zara');
+   
+Select * from BRANDS;
+
+INSERT INTO INV_USER values('&user_id','&user_name','&user_password','&last_login','&user_type');
+INSERT INTO INV_USER values('nisha@gmail.com','Nisha Khaitan','9696','13-12-20 8:20:23.521','Saleswoman');
+INSERT INTO INV_USER values('Sid@gmail.com','Siddharth More','2222','14-12-20 10:40:12.403','Accountant');
+
+INSERT INTO CATEGORIES values('&cid','&category_name');
+INSERT INTO CATEGORIES values('&cid','&category_name');
+INSERT INTO CATEGORIES values(3,'Beverages');
+INSERT INTO CATEGORIES values(4,'Leathers');
+INSERT INTO CATEGORIES values(5,'Clothing');
+
+INSERT INTO STORES values(1,'Sahil Jalan','Kolkata',8799098722);
+INSERT INTO STORES values(2,'Krishnan Iyer','Chennai',9908948540);
+INSERT INTO STORES values(3,'Harmindar Singh','Punjab',9776565230);
+INSERT INTO STORES values(4,'Juhi Braganja','Kolkata',7229567810);
+INSERT INTO STORES values(5,'Pramodh Tuke','Maharastra',8129802338);
+
+INSERT INTO PRODUCT values(1,5,5,4,'Formal Shirt',250,1800,'25-12-2020');
+INSERT INTO PRODUCT values(2,2,2,3,'Headphones',30,1200,'22-12-2020');
+INSERT INTO PRODUCT values(3,2,2,3,'Speaker',25,2200,'21-12-2020');
+INSERT INTO PRODUCT values(4,3,3,1,'Coffee',70,300,'23-12-2020');
+INSERT INTO PRODUCT values(5,4,4,2,'Bags',38,5000,'22-12-2020');
+INSERT INTO PRODUCT values(6,4,4,2,'Belt',50,800,'21-12-2020');
+INSERT INTO PRODUCT values(7,1,1,5,'Shoes',200,3000,'24-12-2020');
+
+INSERT INTO PROVIDES values(1,1,10);
+INSERT INTO PROVIDES values(2,2,15);
+INSERT INTO PROVIDES values(3,3,12);
+INSERT INTO PROVIDES values(4,4,18);
+INSERT INTO PROVIDES values(5,5,10);
+
+INSERT INTO CUSTOMER_CART values(1,'Isha',9887234567);
+INSERT INTO CUSTOMER_CART values(2,'Dhruv',9997833100);
+INSERT INTO CUSTOMER_CART values(3,'Vaibhav',8777976453);
+INSERT INTO CUSTOMER_CART values(4,'Yashna',9087954321);
+
+INSERT INTO SELECT_PRODUCT values(1,2,2);
+INSERT INTO SELECT_PRODUCT values(2,3,4);
+INSERT INTO SELECT_PRODUCT values(3,4,1);
+INSERT INTO SELECT_PRODUCT values(4,1,3);
+
+INSERT INTO TRANSACTION values(1,2900,2900,0,500,500,'CASH',1);
+INSERT INTO TRANSACTION values(2,1060,1060,0,140,140,'CASH',2);
+INSERT INTO TRANSACTION values(3,660,600,60,140,140,'CASH',3);
+INSERT INTO TRANSACTION values(4,7380,6380,1000,1620,1620,'CASH',4);
+
+                                                   ********************** DISPLAY TABLE *****************
+                                                   
+SELECT * FROM BRANDS;
+SELECT * FROM CATEGORIES;
+SELECT * FROM customer_cart;
+select * from inv_user;
+select * from product;
+select * from provides;
+select * from select_product;
+select * from stores;
+select * from transaction;
+
+                                                   
+                                            *********************** FUNCTIONS **************************
+                                            
+set serveroutput on
+DECLARE
+due1 number(5);
+cart_id1 number(7);
+function get_cart(c_id number)return number is
+begin
+return (c_id);
+end;
+begin
+cart_id1:=get_cart('&c_id');
+select due into due1 from transaction where cart_id=cart_id1;
+dbms_output.put_line('The due amount is ' || due1);
+end;
+/
+
+                                                 ************************ CURSORS ***************************
+                                                 
+DECLARE
+p_id product.pid%type;
+p_name product.pname%type;
+p_stock product.p_stock%type;
+cursor p_product is 
+select pid, pname, p_stock from product;
+begin
+open p_product;
+loop
+fetch p_product into p_id, p_name, p_stock;
+exit when p_product%notfound;
+dbms_output.put_line(p_id||' '||p_name||' '||p_stock);
+end loop;
+close p_product;
+end;
+/
+
+                                             ************************ PROCEDURES **************************
+                                             
+DECLARE 
+a number;
+product_id number;
+PROCEDURE check_stock(s in number) is
+begin
+if s<80 then
+dbms_output.put_line('Stock is less');
+else
+dbms_output.put_line('Stock is Enough');
+end if;
+end;
+begin
+product_id:='&product_id';
+select p_stock into a from product where pid=product_id;
+check_stock(a);
+end;
+/
