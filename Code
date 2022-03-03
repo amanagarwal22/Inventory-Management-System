@@ -9,7 +9,6 @@ last_login timestamp,
 user_type varchar(10));
 
 ALTER TABLE INV_USER ADD PRIMARY KEY(user_id);
---ALTER TABLE INV_USER MODIFY COLUMN last_login as ;
 
 CREATE TABLE CATEGORIES (cid number(7),
 category_name VARCHAR(20),
